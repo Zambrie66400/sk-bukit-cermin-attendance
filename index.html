@@ -1,0 +1,2289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Attendance Tracker - SK BUKIT CERMIN</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Login Screen Styles */
+        .login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+            border-top-color: #f8fafc;
+            border-left-color: #f8fafc;
+        }
+
+        .login-header h1 {
+            color: #4facfe;
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .login-header h2 {
+            color: #374151;
+            margin: 0 0 10px 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .login-header p {
+            color: #64748b;
+            margin: 0 0 30px 0;
+            font-size: 1rem;
+        }
+
+        .login-form {
+            margin-bottom: 30px;
+        }
+
+        .login-form .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .login-form .btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        .login-error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #fecaca;
+        }
+
+        .login-footer {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .login-footer p {
+            margin: 5px 0;
+        }
+
+        /* Access Level Indicators */
+        .access-restricted {
+            opacity: 0.5;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .access-restricted::after {
+            content: "🔒 Admin Access Required";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(220, 38, 38, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.6);
+            border: 2px solid #e2e8f0;
+            border-top-color: #f8fafc;
+            border-left-color: #f8fafc;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .school-info h1 {
+            margin: 0;
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .school-info h2 {
+            margin: 10px 0 0 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #ffffff;
+            border-left-color: #ffffff;
+            border-bottom-color: #cbd5e1;
+            border-right-color: #cbd5e1;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.1), inset 1px 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .section h3 {
+            margin: 0 0 20px 0;
+            color: #374151;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .input-group input, .input-group select {
+            padding: 12px 16px;
+            border: 2px solid #d1d5db;
+            border-top-color: #9ca3af;
+            border-left-color: #9ca3af;
+            border-bottom-color: #f3f4f6;
+            border-right-color: #f3f4f6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: white;
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.1), 1px 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+            border-top-color: #2b8ce6;
+            border-left-color: #2b8ce6;
+            border-bottom-color: #7cc7ff;
+            border-right-color: #7cc7ff;
+            box-shadow: inset 1px 1px 3px rgba(0,0,0,0.15), 0 0 0 3px rgba(79, 172, 254, 0.1), 1px 1px 0 rgba(255,255,255,0.9);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: 2px solid;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            position: relative;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.2), inset 1px 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-top-color: #7cc7ff;
+            border-left-color: #7cc7ff;
+            border-bottom-color: #2b8ce6;
+            border-right-color: #2b8ce6;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 3px 3px 6px rgba(0,0,0,0.25), inset 1px 1px 0 rgba(255,255,255,0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(1px);
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.3), inset -1px -1px 0 rgba(255,255,255,0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+            color: white;
+            border-top-color: #7dd87f;
+            border-left-color: #7dd87f;
+            border-bottom-color: #2fa043;
+            border-right-color: #2fa043;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 3px 3px 6px rgba(0,0,0,0.25), inset 1px 1px 0 rgba(255,255,255,0.4);
+        }
+
+        .btn-success:active {
+            transform: translateY(1px);
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.3), inset -1px -1px 0 rgba(255,255,255,0.2);
+        }
+
+        .teacher-list {
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .teacher-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .teacher-item:last-child {
+            border-bottom: none;
+        }
+
+        .teacher-name {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .teacher-count {
+            background: #4facfe;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        .absence-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .teacher-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #ffffff;
+            border-left-color: #ffffff;
+            border-bottom-color: #cbd5e1;
+            border-right-color: #cbd5e1;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.1), inset 1px 1px 0 rgba(255,255,255,0.8);
+            transition: all 0.2s;
+        }
+
+        .teacher-checkbox:hover {
+            border-color: #4facfe;
+            border-top-color: #7cc7ff;
+            border-left-color: #7cc7ff;
+            border-bottom-color: #2b8ce6;
+            border-right-color: #2b8ce6;
+            background: #f8fafc;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.15), inset 1px 1px 0 rgba(255,255,255,0.9);
+        }
+
+        .teacher-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #4facfe;
+        }
+
+        .teacher-checkbox label {
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .data-table {
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #ffffff;
+            border-left-color: #ffffff;
+            border-bottom-color: #cbd5e1;
+            border-right-color: #cbd5e1;
+            box-shadow: 2px 2px 6px rgba(0,0,0,0.1), inset 1px 1px 0 rgba(255,255,255,0.8);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr 1fr;
+            gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            align-items: center;
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .table-row:hover {
+            background: #f8fafc;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status-counted {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-excused {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .percentage-display {
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .percentage-high {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+        }
+
+        .percentage-medium {
+            background: linear-gradient(135deg, #ffd43b 0%, #fab005 100%);
+        }
+
+        .percentage-low {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #ffffff;
+            border-left-color: #ffffff;
+            border-bottom-color: #cbd5e1;
+            border-right-color: #cbd5e1;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.1), inset 1px 1px 0 rgba(255,255,255,0.8);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4facfe;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .reason-stats {
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            padding: 20px;
+        }
+
+        .reason-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .reason-item:last-child {
+            border-bottom: none;
+        }
+
+        .reason-bar {
+            width: 100px;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0 15px;
+        }
+
+        .reason-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            transition: width 0.3s ease;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-state h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+        }
+
+        .exclamation-box {
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 3px solid #ff4500;
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .exclamation-box h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .exclamation-box p {
+            margin: 0;
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .comparison-section {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .month-comparison {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .month-title {
+            font-weight: 700;
+            color: #0ea5e9;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .comparison-stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+        }
+
+        /* Chart Styles */
+        .chart-controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #ffffff;
+            border-left-color: #ffffff;
+            border-bottom-color: #cbd5e1;
+            border-right-color: #cbd5e1;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.1), inset 1px 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .chart-toggle {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            background: #f1f5f9;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+
+        .chart-toggle.active {
+            opacity: 1;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-top-color: #7cc7ff;
+            border-left-color: #7cc7ff;
+            border-bottom-color: #2b8ce6;
+            border-right-color: #2b8ce6;
+        }
+
+        .charts-container {
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            border-top-color: #ffffff;
+            border-left-color: #ffffff;
+            border-bottom-color: #cbd5e1;
+            border-right-color: #cbd5e1;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.1), inset 1px 1px 0 rgba(255,255,255,0.8);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .chart-wrapper {
+            display: none;
+        }
+
+        .chart-wrapper.active {
+            display: block;
+        }
+
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #374151;
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        /* Bar Chart Styles */
+        .bar-chart {
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+            height: 300px;
+            padding: 20px;
+            background: linear-gradient(to top, #f8fafc 0%, transparent 100%);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .bar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 60px;
+            position: relative;
+        }
+
+        .bar {
+            width: 40px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 4px 4px 0 0;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 2px solid;
+            border-top-color: #7cc7ff;
+            border-left-color: #7cc7ff;
+            border-bottom-color: #2b8ce6;
+            border-right-color: #2b8ce6;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.2), inset 1px 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 6px rgba(0,0,0,0.25), inset 1px 1px 0 rgba(255,255,255,0.4);
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #374151;
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .bar-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+            text-align: center;
+            writing-mode: horizontal-tb;
+        }
+
+        /* Pie Chart Styles */
+        .pie-chart-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .pie-chart {
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .pie-slice {
+            stroke: white;
+            stroke-width: 2;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .pie-slice:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+
+        .pie-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 300px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .legend-text {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .legend-value {
+            font-weight: 700;
+            color: #374151;
+        }
+
+        /* Line Chart Styles */
+        .line-chart {
+            background: linear-gradient(to bottom, #f8fafc 0%, transparent 100%);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .line-chart svg {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .line-path {
+            fill: none;
+            stroke: #4facfe;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.1));
+        }
+
+        .line-point {
+            fill: #4facfe;
+            stroke: white;
+            stroke-width: 2;
+            r: 5;
+            transition: all 0.2s ease;
+        }
+
+        .line-point:hover {
+            r: 7;
+            fill: #2b8ce6;
+        }
+
+        .chart-grid-line {
+            stroke: #e2e8f0;
+            stroke-width: 1;
+            stroke-dasharray: 2,2;
+        }
+
+        .chart-axis {
+            stroke: #94a3b8;
+            stroke-width: 1;
+        }
+
+        .chart-label {
+            fill: #64748b;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .table-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+            
+            .school-info h1 {
+                font-size: 2rem;
+                letter-spacing: 1px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            
+            .controls, .section:has(.teacher-checkbox), .exclamation-box {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🏫 SK BUKIT CERMIN</h1>
+                <h2>Teacher Attendance System</h2>
+                <p>Please login to continue</p>
+            </div>
+            
+            <div class="login-form">
+                <div class="input-group">
+                    <label for="userType">Select User Type:</label>
+                    <select id="userType">
+                        <option value="">-- Select User Type --</option>
+                        <option value="admin">Administrator</option>
+                        <option value="headmaster">Headmaster</option>
+                        <option value="teacher">Teacher/Staff (View Only)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="loginPassword">Password:</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password">
+                </div>
+                
+                <button class="btn btn-primary" id="loginBtn">
+                    🔐 Login
+                </button>
+                
+                <div id="loginError" class="login-error" style="display: none;">
+                    ❌ Invalid credentials. Please try again.
+                </div>
+            </div>
+            
+            <div class="login-footer">
+                <p>© 2024 Zambrie bin Mohammed</p>
+                <p>Authorized Personnel Only</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application (Hidden until login) -->
+    <div id="mainApp" class="container" style="display: none;">
+        <div class="header">
+            <div style="position: absolute; top: 10px; left: 10px; font-family: Arial, sans-serif; font-size: 9px; color: rgba(255,255,255,0.8);">
+                HAK CIPTA : ZAMBRIE BIN MOHAMMED
+            </div>
+            <div style="position: absolute; top: 10px; right: 10px;">
+                <span id="currentUser" style="color: rgba(255,255,255,0.9); font-size: 12px; margin-right: 15px;"></span>
+                <button class="btn" id="logoutBtn" style="padding: 5px 10px; font-size: 12px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                    🚪 Logout
+                </button>
+            </div>
+            <div class="school-info">
+                <h1>SK BUKIT CERMIN</h1>
+                <h2>📚 Teacher Attendance Tracker</h2>
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- Period Selection -->
+            <div class="section">
+                <h3>📅 Period Selection</h3>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label for="year">Year</label>
+                        <input type="number" id="year" value="2024" min="2020" max="2030">
+                    </div>
+                    <div class="input-group">
+                        <label for="month">Month</label>
+                        <select id="month">
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="absenceDate">Date</label>
+                        <input type="date" id="absenceDate">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teacher Management -->
+            <div class="section" id="teacherManagementSection">
+                <h3>👥 Teacher Management <span id="teacherCount" class="teacher-count">0 Teachers</span></h3>
+                <div class="form-grid" style="margin-bottom: 20px;">
+                    <div class="input-group">
+                        <label for="teacherNameInput">Teacher Name</label>
+                        <input type="text" id="teacherNameInput" placeholder="Enter teacher name...">
+                    </div>
+                    <button class="btn btn-primary" id="addTeacherBtn">
+                        ➕ Add Teacher
+                    </button>
+                </div>
+                
+                <div class="teacher-list" id="teacherList">
+                    <div class="empty-state">
+                        <h3>No teachers added yet</h3>
+                        <p>Add teachers to get started with attendance tracking</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- End of Month Notification -->
+            <div id="endOfMonthNotification" class="exclamation-box" style="display: none;">
+                <h3>⚠️ End of Month Reminder</h3>
+                <p>It's the end of the month! Don't forget to add any new teachers before generating your monthly reports.</p>
+            </div>
+
+            <!-- Record Absences -->
+            <div class="section" id="recordAbsencesSection">
+                <h3>✅ Record Teacher Absences</h3>
+                <div class="form-grid" style="margin-bottom: 20px;">
+                    <div class="input-group">
+                        <label for="absenceReason">Absence Reason</label>
+                        <select id="absenceReason">
+                            <option value="Bekerja dari rumah">Bekerja dari rumah</option>
+                            <option value="Bengkel">Bengkel</option>
+                            <option value="Bertugas dalam Kokurikulum,Koakademik, Sukan">Bertugas dalam Kokurikulum,Koakademik, Sukan</option>
+                            <option value="Covid-19">Covid-19</option>
+                            <option value="Cuti bersalin">Cuti bersalin</option>
+                            <option value="Cuti haji">Cuti haji</option>
+                            <option value="Cuti kecederaan">Cuti kecederaan</option>
+                            <option value="Cuti kecemasan am">Cuti kecemasan am</option>
+                            <option value="Cuti kuarantin">Cuti kuarantin</option>
+                            <option value="Cuti kursus sambilan (PJJ)">Cuti kursus sambilan (PJJ)</option>
+                            <option value="Cuti kursus/belajar">Cuti kursus/belajar</option>
+                            <option value="Cuti sakit">Cuti sakit</option>
+                            <option value="Cuti sakit lanjutan">Cuti sakit lanjutan</option>
+                            <option value="Cuti tanpa gaji ikut pasangan">Cuti tanpa gaji ikut pasangan</option>
+                            <option value="Cuti tanpa rekod">Cuti tanpa rekod</option>
+                            <option value="Cuti tibi,kusta,barah">Cuti tibi,kusta,barah</option>
+                            <option value="Cuti umrah">Cuti umrah</option>
+                            <option value="Kursus">Kursus</option>
+                            <option value="Mesyuarat">Mesyuarat</option>
+                            <option value="Pengawas peperiksaan">Pengawas peperiksaan</option>
+                            <option value="Proses pemulihan di JPN">Proses pemulihan di JPN</option>
+                            <option value="Proses pemulihan di PPD">Proses pemulihan di PPD</option>
+                            <option value="Tahan gantung kerja (tatatertib)">Tahan gantung kerja (tatatertib)</option>
+                            <option value="Taklimat">Taklimat</option>
+                            <option value="Tanpa kenyataan">Tanpa kenyataan</option>
+                            <option value="Tugas rasmi seperti diarahkan oleh pentadbir,PPD/JPN/KPM">Tugas rasmi seperti diarahkan oleh pentadbir,PPD/JPN/KPM</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="absence-form" id="absenceForm">
+                    <div class="empty-state">
+                        <p>Add teachers to record their absences</p>
+                    </div>
+                </div>
+                
+                <button class="btn btn-success" id="recordAbsencesBtn" style="margin-top: 20px;">
+                    📝 Record Selected Absences
+                </button>
+            </div>
+
+            <!-- Statistics Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTeachersCount">0</div>
+                    <div class="stat-label">Total Teachers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="averageAttendance">100%</div>
+                    <div class="stat-label">Average Attendance</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalAbsences">0</div>
+                    <div class="stat-label">Total Absences</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="workingDays">22</div>
+                    <div class="stat-label">School Days</div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button class="btn btn-primary" onclick="window.print()">
+                    🖨️ Print Report
+                </button>
+                <button class="btn btn-success" id="exportExcelBtn">
+                    📊 Export to Excel
+                </button>
+            </div>
+
+            <!-- Attendance Records -->
+            <div class="data-table">
+                <div class="table-header">
+                    <span>📋 Daily Attendance Records</span>
+                    <span id="recordsCount">0 records</span>
+                </div>
+                <div id="attendanceRecords">
+                    <div class="empty-state">
+                        <h3>No attendance records yet</h3>
+                        <p>Record teacher absences to see data here</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Teacher Summary -->
+            <div class="data-table">
+                <div class="table-header">
+                    <span>📊 Monthly Teacher Summary</span>
+                </div>
+                <div id="monthlySummary">
+                    <div class="empty-state">
+                        <h3>No data available</h3>
+                        <p>Add teachers and record absences to see monthly summary</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Absence Reasons Statistics -->
+            <div class="section">
+                <h3>📈 Absence Reasons Analysis</h3>
+                <div class="reason-stats" id="reasonStats">
+                    <div class="empty-state">
+                        <p>No absence data to analyze</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Comparison Charts -->
+            <div class="section comparison-section">
+                <h3>📊 Monthly Comparison (Current Year)</h3>
+                
+                <!-- Chart Controls -->
+                <div class="chart-controls" style="margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary chart-toggle active" data-chart="bar">📊 Bar Chart</button>
+                    <button class="btn btn-primary chart-toggle" data-chart="pie">🥧 Pie Chart</button>
+                    <button class="btn btn-primary chart-toggle" data-chart="line">📈 Line Chart</button>
+                    <div class="input-group" style="min-width: 200px;">
+                        <label for="chartMetric">Chart Metric:</label>
+                        <select id="chartMetric">
+                            <option value="attendance">Average Attendance %</option>
+                            <option value="absences">Total Absences</option>
+                            <option value="teachers">Total Teachers (Staff Count)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Charts Container -->
+                <div class="charts-container">
+                    <!-- Bar Chart -->
+                    <div class="chart-wrapper active" id="barChartWrapper">
+                        <div class="chart-title">Monthly Attendance Comparison</div>
+                        <div class="bar-chart" id="barChart">
+                            <div class="empty-state">
+                                <p>Add attendance data to see bar chart</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pie Chart -->
+                    <div class="chart-wrapper" id="pieChartWrapper">
+                        <div class="chart-title">Absence Reasons Distribution</div>
+                        <div class="pie-chart-container">
+                            <svg class="pie-chart" id="pieChart" width="400" height="400" viewBox="0 0 400 400">
+                                <g transform="translate(200,200)"></g>
+                            </svg>
+                            <div class="pie-legend" id="pieLegend"></div>
+                        </div>
+                    </div>
+
+                    <!-- Line Chart -->
+                    <div class="chart-wrapper" id="lineChartWrapper">
+                        <div class="chart-title">Attendance Trend Over Time</div>
+                        <div class="line-chart" id="lineChart">
+                            <svg width="100%" height="300" viewBox="0 0 800 300">
+                                <g class="chart-content"></g>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Traditional Comparison Grid -->
+                <div class="comparison-grid" id="monthlyComparison" style="margin-top: 30px;">
+                    <div class="empty-state">
+                        <p>Add attendance data to see monthly comparisons</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let teachers = [];
+        let absenceRecords = [];
+        let currentYear = 2024;
+        let currentMonth = new Date().getMonth() + 1;
+        let currentUser = null;
+        let userRole = null;
+
+        // User credentials - CHANGE THESE PASSWORDS!
+        const users = {
+            'admin': {
+                password: 'skbc2024admin',
+                role: 'administrator',
+                displayName: 'Administrator'
+            },
+            'headmaster': {
+                password: 'skbc2024head',
+                role: 'administrator', 
+                displayName: 'Headmaster'
+            },
+            'teacher': {
+                password: 'skbc2024view',
+                role: 'viewer',
+                displayName: 'Teacher/Staff'
+            }
+        };
+
+        // Absence categories - Excused absences don't count towards attendance percentage
+        const excusedAbsences = [
+            'Bekerja dari rumah',
+            'Bengkel',
+            'Bertugas dalam Kokurikulum,Koakademik, Sukan',
+            'Covid-19',
+            'Cuti kursus sambilan (PJJ)',
+            'Cuti kursus/belajar',
+            'Cuti tanpa rekod',
+            'Kursus',
+            'Mesyuarat',
+            'Pengawas peperiksaan',
+            'Proses pemulihan di JPN',
+            'Proses pemulihan di PPD',
+            'Tahan gantung kerja (tatatertib)',
+            'Taklimat',
+            'Tugas rasmi seperti diarahkan oleh pentadbir,PPD/JPN/KPM'
+        ];
+
+        const countedAbsences = [
+            'Cuti bersalin',
+            'Cuti haji',
+            'Cuti kecederaan',
+            'Cuti kecemasan am',
+            'Cuti kuarantin',
+            'Cuti sakit',
+            'Cuti sakit lanjutan',
+            'Cuti tanpa gaji ikut pasangan',
+            'Cuti tibi,kusta,barah',
+            'Cuti umrah',
+            'Tanpa kenyataan'
+        ];
+
+        // Initialize application
+        window.addEventListener('load', function() {
+            setupEventListeners();
+            loadData();
+            checkLoginStatus();
+        });
+
+        function setupEventListeners() {
+            // Login functionality
+            document.getElementById('loginBtn').addEventListener('click', handleLogin);
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+
+            // Main app functionality
+            document.getElementById('addTeacherBtn').addEventListener('click', addTeacher);
+            document.getElementById('recordAbsencesBtn').addEventListener('click', recordAbsences);
+            document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
+            
+            document.getElementById('year').addEventListener('change', function() {
+                currentYear = parseInt(this.value);
+                updateDisplay();
+                saveData();
+                checkEndOfMonth();
+            });
+
+            document.getElementById('month').addEventListener('change', function() {
+                currentMonth = parseInt(this.value);
+                updateDisplay();
+                saveData();
+                checkEndOfMonth();
+            });
+
+            document.getElementById('teacherNameInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTeacher();
+                }
+            });
+
+            // Chart controls
+            document.querySelectorAll('.chart-toggle').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const chartType = this.dataset.chart;
+                    switchChart(chartType);
+                });
+            });
+
+            document.getElementById('chartMetric').addEventListener('change', function() {
+                updateCharts();
+            });
+        }
+
+        function handleLogin() {
+            const userType = document.getElementById('userType').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+
+            if (!userType || !password) {
+                showLoginError('Please select user type and enter password.');
+                return;
+            }
+
+            if (users[userType] && users[userType].password === password) {
+                currentUser = users[userType].displayName;
+                userRole = users[userType].role;
+                
+                // Save login status
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('currentUser', currentUser);
+                sessionStorage.setItem('userRole', userRole);
+                
+                showMainApp();
+                hideLoginError();
+            } else {
+                showLoginError('Invalid credentials. Please try again.');
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            userRole = null;
+            sessionStorage.removeItem('isLoggedIn');
+            sessionStorage.removeItem('currentUser');
+            sessionStorage.removeItem('userRole');
+            showLoginScreen();
+        }
+
+        function checkLoginStatus() {
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+            if (isLoggedIn === 'true') {
+                currentUser = sessionStorage.getItem('currentUser');
+                userRole = sessionStorage.getItem('userRole');
+                showMainApp();
+            } else {
+                showLoginScreen();
+            }
+        }
+
+        function showMainApp() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('currentUser').textContent = `Logged in as: ${currentUser}`;
+            
+            applyAccessRestrictions();
+            updateDisplay();
+            setCurrentDate();
+            checkEndOfMonth();
+        }
+
+        function showLoginScreen() {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('userType').value = '';
+            document.getElementById('loginPassword').value = '';
+            hideLoginError();
+        }
+
+        function showLoginError(message) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideLoginError() {
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        function applyAccessRestrictions() {
+            if (userRole === 'viewer') {
+                // Disable editing sections for viewers
+                const restrictedSections = [
+                    'teacherManagementSection',
+                    'recordAbsencesSection'
+                ];
+                
+                restrictedSections.forEach(sectionId => {
+                    const section = document.getElementById(sectionId);
+                    if (section) {
+                        section.classList.add('access-restricted');
+                    }
+                });
+
+                // Hide export button for viewers (optional)
+                // document.getElementById('exportExcelBtn').style.display = 'none';
+            } else {
+                // Remove restrictions for administrators
+                document.querySelectorAll('.access-restricted').forEach(element => {
+                    element.classList.remove('access-restricted');
+                });
+            }
+        }
+
+        function setCurrentDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('absenceDate').value = today;
+            document.getElementById('year').value = currentYear;
+            document.getElementById('month').value = currentMonth;
+        }
+
+        function checkEndOfMonth() {
+            const today = new Date();
+            const currentDate = today.getDate();
+            const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+            const notification = document.getElementById('endOfMonthNotification');
+            
+            // Show notification on the last 3 days of the month
+            if (currentDate >= daysInMonth - 2 && today.getMonth() + 1 === currentMonth && today.getFullYear() === currentYear) {
+                notification.style.display = 'block';
+            } else {
+                notification.style.display = 'none';
+            }
+        }
+
+        function addTeacher() {
+            if (userRole === 'viewer') {
+                alert('Access denied. Only administrators can add teachers.');
+                return;
+            }
+
+            const nameInput = document.getElementById('teacherNameInput');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('Please enter a teacher name.');
+                return;
+            }
+
+            if (teachers.some(teacher => teacher.name.toLowerCase() === name.toLowerCase())) {
+                alert('This teacher is already in the list.');
+                return;
+            }
+
+            const teacher = {
+                id: Date.now(),
+                name: name,
+                dateAdded: new Date().toISOString()
+            };
+
+            teachers.push(teacher);
+            nameInput.value = '';
+            
+            updateDisplay();
+            saveData();
+            
+            alert(`✅ Teacher "${teacher.name}" added successfully!`);
+        }
+
+        function recordAbsences() {
+            if (userRole === 'viewer') {
+                alert('Access denied. Only administrators can record absences.');
+                return;
+            }
+
+            const selectedDate = document.getElementById('absenceDate').value;
+            const reason = document.getElementById('absenceReason').value;
+            
+            if (!selectedDate) {
+                alert('Please select a date for the absence.');
+                return;
+            }
+            
+            const checkedBoxes = document.querySelectorAll('#absenceForm input[type="checkbox"]:checked');
+            
+            if (checkedBoxes.length === 0) {
+                alert('Please select at least one teacher to mark as absent.');
+                return;
+            }
+
+            let recordedCount = 0;
+            const recordedTeachers = [];
+            const duplicateTeachers = [];
+            
+            checkedBoxes.forEach(checkbox => {
+                const teacherId = parseInt(checkbox.value);
+                const teacher = teachers.find(t => t.id === teacherId);
+                
+                if (!teacher) return;
+                
+                const selectedDateObj = new Date(selectedDate);
+                const recordMonth = selectedDateObj.getMonth() + 1;
+                const recordYear = selectedDateObj.getFullYear();
+                
+                const existingRecord = absenceRecords.find(record => 
+                    record.teacherId === teacherId && 
+                    record.date === selectedDate
+                );
+
+                if (!existingRecord) {
+                    const newRecord = {
+                        id: Date.now() + Math.random(),
+                        teacherId: teacherId,
+                        teacherName: teacher.name,
+                        date: selectedDate,
+                        reason: reason,
+                        month: recordMonth,
+                        year: recordYear,
+                        isExcused: excusedAbsences.includes(reason),
+                        countsForAttendance: countedAbsences.includes(reason)
+                    };
+                    
+                    absenceRecords.push(newRecord);
+                    recordedCount++;
+                    recordedTeachers.push(teacher.name);
+                } else {
+                    duplicateTeachers.push(teacher.name);
+                }
+                
+                checkbox.checked = false;
+            });
+
+            updateDisplay();
+            saveData();
+
+            let message = '';
+            if (recordedCount > 0) {
+                message += `✅ Recorded ${recordedCount} absence(s) for ${selectedDate}!\n\nTeachers marked absent:\n${recordedTeachers.join('\n')}`;
+            }
+            
+            if (duplicateTeachers.length > 0) {
+                if (message) message += '\n\n';
+                message += `⚠️ Already have records for:\n${duplicateTeachers.join('\n')}`;
+            }
+            
+            if (message) {
+                alert(message);
+            }
+        }
+
+        function updateDisplay() {
+            updateTeacherList();
+            updateAbsenceForm();
+            updateAttendanceRecords();
+            updateMonthlySummary();
+            updateReasonStats();
+            updateStatistics();
+            updateMonthlyComparison();
+            updateCharts();
+        }
+
+        function updateTeacherList() {
+            const container = document.getElementById('teacherList');
+            const teacherCount = document.getElementById('teacherCount');
+            
+            teacherCount.textContent = `${teachers.length} Teacher${teachers.length !== 1 ? 's' : ''}`;
+            
+            if (teachers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No teachers added yet</h3>
+                        <p>Add teachers to get started with attendance tracking</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const content = teachers.map(teacher => `
+                <div class="teacher-item">
+                    <span class="teacher-name">${teacher.name}</span>
+                </div>
+            `).join('');
+            
+            container.innerHTML = content;
+        }
+
+        function updateAbsenceForm() {
+            const container = document.getElementById('absenceForm');
+            
+            if (teachers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>Add teachers to record their absences</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const content = teachers.map(teacher => `
+                <div class="teacher-checkbox">
+                    <input type="checkbox" id="teacher_${teacher.id}" value="${teacher.id}">
+                    <label for="teacher_${teacher.id}">${teacher.name}</label>
+                </div>
+            `).join('');
+            
+            container.innerHTML = content;
+        }
+
+        function updateAttendanceRecords() {
+            const container = document.getElementById('attendanceRecords');
+            const recordsCount = document.getElementById('recordsCount');
+            
+            const currentRecords = absenceRecords.filter(record => 
+                record.month === currentMonth && record.year === currentYear
+            );
+            
+            recordsCount.textContent = `${currentRecords.length} record${currentRecords.length !== 1 ? 's' : ''}`;
+            
+            if (currentRecords.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No attendance records yet</h3>
+                        <p>Record teacher absences to see data here</p>
+                    </div>
+                `;
+                return;
+            }
+
+            currentRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            let content = `
+                <div class="table-row" style="background: #f8fafc; font-weight: 600;">
+                    <div>Date</div>
+                    <div>Teacher</div>
+                    <div>Reason</div>
+                    <div>Status</div>
+                </div>
+            `;
+
+            content += currentRecords.map(record => {
+                const dateObj = new Date(record.date);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+
+                const statusBadge = record.isExcused ? 
+                    '<span class="status-badge status-excused">Excused</span>' : 
+                    '<span class="status-badge status-counted">Counted</span>';
+
+                return `
+                    <div class="table-row">
+                        <div>${formattedDate}</div>
+                        <div class="teacher-name">${record.teacherName}</div>
+                        <div style="font-size: 0.9rem;">${record.reason}</div>
+                        <div>${statusBadge}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = content;
+        }
+
+        function updateMonthlySummary() {
+            const container = document.getElementById('monthlySummary');
+            
+            if (teachers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No data available</h3>
+                        <p>Add teachers and record absences to see monthly summary</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+            const schoolDays = Math.floor(daysInMonth * 22/30); // Approximate school days
+
+            let content = `
+                <div class="table-row" style="background: #f8fafc; font-weight: 600;">
+                    <div>Teacher Name</div>
+                    <div>Present Days</div>
+                    <div>Counted Absences</div>
+                    <div>Attendance %</div>
+                </div>
+            `;
+
+            content += teachers.map(teacher => {
+                const teacherAbsences = absenceRecords.filter(record => 
+                    record.teacherId === teacher.id &&
+                    record.month === currentMonth &&
+                    record.year === currentYear
+                );
+
+                const countedAbsences = teacherAbsences.filter(record => record.countsForAttendance === true).length;
+                const presentDays = Math.max(0, schoolDays - countedAbsences);
+                const attendancePercentage = schoolDays > 0 ? Math.round((presentDays / schoolDays) * 100) : 100;
+
+                return `
+                    <div class="table-row">
+                        <div class="teacher-name">${teacher.name}</div>
+                        <div>${presentDays}</div>
+                        <div>${countedAbsences}</div>
+                        <div>
+                            <span class="percentage-display ${getPercentageClass(attendancePercentage)}">
+                                ${attendancePercentage}%
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = content;
+        }
+
+        function updateReasonStats() {
+            const container = document.getElementById('reasonStats');
+            
+            const currentRecords = absenceRecords.filter(record => 
+                record.month === currentMonth && record.year === currentYear
+            );
+
+            if (currentRecords.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>No absence data to analyze</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const reasonCounts = {};
+            currentRecords.forEach(record => {
+                reasonCounts[record.reason] = (reasonCounts[record.reason] || 0) + 1;
+            });
+
+            const sortedReasons = Object.entries(reasonCounts)
+                .sort(([,a], [,b]) => b - a);
+
+            const totalAbsences = currentRecords.length;
+
+            const content = sortedReasons.map(([reason, count]) => {
+                const percentage = Math.round((count / totalAbsences) * 100);
+                const isExcused = excusedAbsences.includes(reason);
+                const statusColor = isExcused ? '#16a34a' : '#dc2626';
+                
+                return `
+                    <div class="reason-item">
+                        <div style="flex: 1; font-weight: 500;">${reason} ${isExcused ? '(Excused)' : '(Counted)'}</div>
+                        <div class="reason-bar">
+                            <div class="reason-fill" style="width: ${percentage}%; background: ${statusColor};"></div>
+                        </div>
+                        <div style="font-weight: 600; color: ${statusColor};">${count} (${percentage}%)</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = content;
+        }
+
+        function updateStatistics() {
+            const currentRecords = absenceRecords.filter(record => 
+                record.month === currentMonth && record.year === currentYear
+            );
+
+            // Total teachers
+            document.getElementById('totalTeachersCount').textContent = teachers.length;
+            
+            // Total absences - make sure this updates correctly
+            const totalAbsencesElement = document.getElementById('totalAbsences');
+            if (totalAbsencesElement) {
+                totalAbsencesElement.textContent = currentRecords.length;
+            }
+
+            // School days
+            const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+            const schoolDays = Math.floor(daysInMonth * 22/30);
+            const workingDaysElement = document.getElementById('workingDays');
+            if (workingDaysElement) {
+                workingDaysElement.textContent = schoolDays;
+            }
+
+            // Average attendance - only count absences that affect attendance
+            if (teachers.length > 0) {
+                let totalAttendance = 0;
+                teachers.forEach(teacher => {
+                    const teacherAbsences = currentRecords.filter(r => r.teacherId === teacher.id);
+                    const countedAbsences = teacherAbsences.filter(r => r.countsForAttendance === true).length;
+                    const presentDays = Math.max(0, schoolDays - countedAbsences);
+                    const attendancePercentage = schoolDays > 0 ? Math.round((presentDays / schoolDays) * 100) : 100;
+                    totalAttendance += attendancePercentage;
+                });
+                
+                const averageAttendance = Math.round(totalAttendance / teachers.length);
+                document.getElementById('averageAttendance').textContent = averageAttendance + '%';
+            } else {
+                document.getElementById('averageAttendance').textContent = '100%';
+            }
+        }
+
+        function updateMonthlyComparison() {
+            const container = document.getElementById('monthlyComparison');
+            
+            if (teachers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>Add attendance data to see monthly comparisons</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            let content = '';
+            
+            for (let month = 1; month <= 12; month++) {
+                const monthRecords = absenceRecords.filter(record => 
+                    record.month === month && record.year === currentYear
+                );
+
+                if (monthRecords.length > 0 || month === currentMonth) {
+                    const daysInMonth = new Date(currentYear, month, 0).getDate();
+                    const schoolDays = Math.floor(daysInMonth * 22/30);
+                    
+                    let totalAttendance = 0;
+                    let totalAbsences = monthRecords.length;
+                    
+                    teachers.forEach(teacher => {
+                        const teacherAbsences = monthRecords.filter(r => r.teacherId === teacher.id);
+                        const countedAbsences = teacherAbsences.filter(r => r.countsForAttendance === true).length;
+                        const presentDays = Math.max(0, schoolDays - countedAbsences);
+                        const attendancePercentage = schoolDays > 0 ? Math.round((presentDays / schoolDays) * 100) : 100;
+                        totalAttendance += attendancePercentage;
+                    });
+                    
+                    const averageAttendance = teachers.length > 0 ? Math.round(totalAttendance / teachers.length) : 100;
+                    
+                    content += `
+                        <div class="month-comparison ${month === currentMonth ? 'current-month' : ''}">
+                            <div class="month-title">${monthNames[month - 1]} ${currentYear}</div>
+                            <div class="comparison-stat">
+                                <span>Average Attendance:</span>
+                                <span style="font-weight: 700; color: ${getPercentageColor(averageAttendance)};">${averageAttendance}%</span>
+                            </div>
+                            <div class="comparison-stat">
+                                <span>Total Absences:</span>
+                                <span style="font-weight: 600;">${totalAbsences}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            if (content === '') {
+                content = `
+                    <div class="empty-state">
+                        <p>No attendance data available for comparison</p>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = content;
+        }
+
+        function calculateTeacherAttendance(teacherId, month, year) {
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const schoolDays = Math.floor(daysInMonth * 22/30);
+            
+            const teacherAbsences = absenceRecords.filter(record => 
+                record.teacherId === teacherId &&
+                record.month === month &&
+                record.year === year &&
+                record.countsForAttendance === true
+            );
+
+            const countedAbsences = teacherAbsences.length;
+            const presentDays = Math.max(0, schoolDays - countedAbsences);
+            
+            return schoolDays > 0 ? Math.round((presentDays / schoolDays) * 100) : 100;
+        }
+
+        function getPercentageClass(percentage) {
+            if (percentage >= 90) return 'percentage-high';
+            if (percentage >= 70) return 'percentage-medium';
+            return 'percentage-low';
+        }
+
+        function getPercentageColor(percentage) {
+            if (percentage >= 90) return '#16a34a';
+            if (percentage >= 70) return '#f59e0b';
+            return '#dc2626';
+        }
+
+        function exportToExcel() {
+            if (teachers.length === 0) {
+                alert('No data to export. Please add teachers first.');
+                return;
+            }
+
+            try {
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                  'July', 'August', 'September', 'October', 'November', 'December'];
+                const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+                const schoolDays = Math.floor(daysInMonth * 22/30);
+                
+                const wb = XLSX.utils.book_new();
+
+                // Monthly Summary Sheet
+                const summaryData = [
+                    ['SK BUKIT CERMIN'],
+                    ['Teacher Attendance Report'],
+                    [`Period: ${monthNames[currentMonth - 1]} ${currentYear}`],
+                    [`School Days: ${schoolDays}`],
+                    [''],
+                    ['Teacher Name', 'Present Days', 'Counted Absences', 'Attendance %']
+                ];
+
+                teachers.forEach(teacher => {
+                    const teacherAbsences = absenceRecords.filter(record => 
+                        record.teacherId === teacher.id &&
+                        record.month === currentMonth &&
+                        record.year === currentYear
+                    );
+
+                    const countedAbsences = teacherAbsences.filter(record => record.countsForAttendance === true).length;
+                    const presentDays = Math.max(0, schoolDays - countedAbsences);
+                    const attendancePercentage = schoolDays > 0 ? Math.round((presentDays / schoolDays) * 100) : 100;
+
+                    summaryData.push([
+                        teacher.name,
+                        presentDays,
+                        countedAbsences,
+                        attendancePercentage + '%'
+                    ]);
+                });
+
+                const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
+                XLSX.utils.book_append_sheet(wb, ws1, 'Monthly Summary');
+
+                // Detailed Records Sheet
+                const recordsData = [
+                    ['Daily Attendance Records'],
+                    [''],
+                    ['Date', 'Teacher Name', 'Reason', 'Status']
+                ];
+
+                const currentRecords = absenceRecords.filter(record => 
+                    record.month === currentMonth && record.year === currentYear
+                );
+
+                currentRecords.forEach(record => {
+                    recordsData.push([
+                        record.date,
+                        record.teacherName,
+                        record.reason,
+                        record.isExcused ? 'Excused' : 'Counted'
+                    ]);
+                });
+
+                const ws2 = XLSX.utils.aoa_to_sheet(recordsData);
+                XLSX.utils.book_append_sheet(wb, ws2, 'Daily Records');
+
+                const filename = `SK_BUKIT_CERMIN_Attendance_${monthNames[currentMonth - 1]}_${currentYear}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                
+                alert('Excel file exported successfully!');
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Export failed. Please try again.');
+            }
+        }
+
+        function saveData() {
+            const data = {
+                teachers: teachers,
+                absenceRecords: absenceRecords,
+                currentYear: currentYear,
+                currentMonth: currentMonth,
+                lastSaved: new Date().toISOString()
+            };
+            localStorage.setItem('skBukitCerminAttendance', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('skBukitCerminAttendance');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    teachers = data.teachers || [];
+                    absenceRecords = data.absenceRecords || [];
+                    if (data.currentYear) currentYear = data.currentYear;
+                    if (data.currentMonth) currentMonth = data.currentMonth;
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                }
+            }
+        }
+
+        // Chart Functions
+        function switchChart(chartType) {
+            // Update button states
+            document.querySelectorAll('.chart-toggle').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-chart="${chartType}"]`).classList.add('active');
+
+            // Show/hide chart wrappers
+            document.querySelectorAll('.chart-wrapper').forEach(wrapper => {
+                wrapper.classList.remove('active');
+            });
+            document.getElementById(`${chartType}ChartWrapper`).classList.add('active');
+
+            updateCharts();
+        }
+
+        function updateCharts() {
+            const activeChart = document.querySelector('.chart-wrapper.active');
+            if (!activeChart) return;
+
+            const chartType = activeChart.id.replace('ChartWrapper', '');
+            
+            switch(chartType) {
+                case 'bar':
+                    updateBarChart();
+                    break;
+                case 'pie':
+                    updatePieChart();
+                    break;
+                case 'line':
+                    updateLineChart();
+                    break;
+            }
+        }
+
+        function updateBarChart() {
+            const container = document.getElementById('barChart');
+            const metric = document.getElementById('chartMetric').value;
+            
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            let chartData = [];
+            let maxValue = 0;
+
+            for (let month = 1; month <= 12; month++) {
+                const monthRecords = absenceRecords.filter(record => 
+                    record.month === month && record.year === currentYear
+                );
+
+                let value = 0;
+                let label = monthNames[month - 1];
+
+                switch(metric) {
+                    case 'attendance':
+                        if (teachers.length > 0) {
+                            const daysInMonth = new Date(currentYear, month, 0).getDate();
+                            const schoolDays = Math.floor(daysInMonth * 22/30);
+                            
+                            let totalAttendance = 0;
+                            teachers.forEach(teacher => {
+                                const teacherAbsences = monthRecords.filter(r => r.teacherId === teacher.id);
+                                const countedAbsences = teacherAbsences.filter(r => r.countsForAttendance === true).length;
+                                const presentDays = Math.max(0, schoolDays - countedAbsences);
+                                const attendancePercentage = schoolDays > 0 ? Math.round((presentDays / schoolDays) * 100) : 100;
+                                totalAttendance += attendancePercentage;
+                            });
+                            value = Math.round(totalAttendance / teachers.length);
+                        } else {
+                            value = 100;
+                        }
+                        break;
+                    case 'absences':
+                        value = monthRecords.length;
+                        break;
+                    case 'teachers':
+                        value = teachers.length;
+                        break;
+                }
+
+                if (monthRecords.length > 0 || month === currentMonth) {
+                    chartData.push({ month, label, value });
+                    maxValue = Math.max(maxValue, value);
+                }
+            }
+
+            if (chartData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>Add attendance data to see bar chart</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const chartTitle = document.querySelector('#barChartWrapper .chart-title');
+            switch(metric) {
+                case 'attendance':
+                    chartTitle.textContent = 'Monthly Average Attendance %';
+                    break;
+                case 'absences':
+                    chartTitle.textContent = 'Monthly Total Absences';
+                    break;
+                case 'teachers':
+                    chartTitle.textContent = 'Total Teachers (Staff Count)';
+                    break;
+            }
+
+            const content = chartData.map(item => {
+                const height = maxValue > 0 ? Math.max(20, (item.value / maxValue) * 250) : 20;
+                const color = metric === 'attendance' ? getBarColor(item.value) : '#4facfe';
+                
+                return `
+                    <div class="bar-item">
+                        <div class="bar" style="height: ${height}px; background: ${color};">
+                            <div class="bar-value">${item.value}${metric === 'attendance' ? '%' : ''}</div>
+                        </div>
+                        <div class="bar-label">${item.label}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = content;
+        }
+
+        function updatePieChart() {
+            const svg = document.querySelector('#pieChart g');
+            const legend = document.getElementById('pieLegend');
+            
+            const currentRecords = absenceRecords.filter(record => 
+                record.month === currentMonth && record.year === currentYear
+            );
+
+            if (currentRecords.length === 0) {
+                svg.innerHTML = '';
+                legend.innerHTML = `
+                    <div class="empty-state">
+                        <p>No absence data for pie chart</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const reasonCounts = {};
+            currentRecords.forEach(record => {
+                reasonCounts[record.reason] = (reasonCounts[record.reason] || 0) + 1;
+            });
+
+            const sortedReasons = Object.entries(reasonCounts)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 8); // Show top 8 reasons
+
+            const total = currentRecords.length;
+            const colors = [
+                '#4facfe', '#ff6b6b', '#51cf66', '#ffd43b', 
+                '#ff9a56', '#845ec2', '#f093fb', '#4ecdc4'
+            ];
+
+            let currentAngle = 0;
+            let slices = '';
+            let legendItems = '';
+
+            sortedReasons.forEach(([reason, count], index) => {
+                const percentage = (count / total) * 100;
+                const angle = (count / total) * 360;
+                const endAngle = currentAngle + angle;
+                
+                const x1 = Math.cos((currentAngle - 90) * Math.PI / 180) * 150;
+                const y1 = Math.sin((currentAngle - 90) * Math.PI / 180) * 150;
+                const x2 = Math.cos((endAngle - 90) * Math.PI / 180) * 150;
+                const y2 = Math.sin((endAngle - 90) * Math.PI / 180) * 150;
+                
+                const largeArc = angle > 180 ? 1 : 0;
+                const color = colors[index % colors.length];
+                
+                slices += `
+                    <path class="pie-slice" 
+                          d="M 0 0 L ${x1} ${y1} A 150 150 0 ${largeArc} 1 ${x2} ${y2} Z"
+                          fill="${color}"
+                          title="${reason}: ${count} (${percentage.toFixed(1)}%)">
+                    </path>
+                `;
+
+                const shortReason = reason.length > 30 ? reason.substring(0, 30) + '...' : reason;
+                legendItems += `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${color};"></div>
+                        <div class="legend-text">${shortReason}</div>
+                        <div class="legend-value">${count} (${percentage.toFixed(1)}%)</div>
+                    </div>
+                `;
+
+                currentAngle = endAngle;
+            });
+
+            svg.innerHTML = slices;
+            legend.innerHTML = legendItems;
+        }
+
+        function updateLineChart() {
+            const svg = document.querySelector('#lineChart .chart-content');
+            const metric = document.getElementById('chartMetric').value;
+            
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            let chartData = [];
+            let maxValue = 0;
+
+            for (let month = 1; month <= 12; month++) {
+                const monthRecords = absenceRecords.filter(record => 
+                    record.month === month && record.year === currentYear
+                );
+
+                let value = 0;
+
+                switch(metric) {
+                    case 'attendance':
+                        if (teachers.length > 0) {
+                            const daysInMonth = new Date(currentYear, month, 0).getDate();
+                            const schoolDays = Math.floor(daysInMonth * 22/30);
+                            
+                            let totalAttendance = 0;
+                            teachers.forEach(teacher => {
+                                const teacherAbsences = monthRecords.filter(r => r.teacherId === teacher.id);
+                                const countedAbsences = teacherAbsences.filter(r => r.countsForAttendance === true).length;
+                                const presentDays = Math.max(0, schoolDays - countedAbsences);
+                                const attendancePercentage = schoolDays > 0 ? Math.round((presentDays / schoolDays) * 100) : 100;
+                                totalAttendance += attendancePercentage;
+                            });
+                            value = Math.round(totalAttendance / teachers.length);
+                        } else {
+                            value = 100;
+                        }
+                        break;
+                    case 'absences':
+                        value = monthRecords.length;
+                        break;
+                    case 'teachers':
+                        value = teachers.length;
+                        break;
+                }
+
+                if (monthRecords.length > 0 || month === currentMonth) {
+                    chartData.push({ month, label: monthNames[month - 1], value });
+                    maxValue = Math.max(maxValue, value);
+                }
+            }
+
+            if (chartData.length === 0) {
+                svg.innerHTML = `
+                    <text x="400" y="150" text-anchor="middle" class="chart-label">
+                        Add attendance data to see line chart
+                    </text>
+                `;
+                return;
+            }
+
+            const chartTitle = document.querySelector('#lineChartWrapper .chart-title');
+            switch(metric) {
+                case 'attendance':
+                    chartTitle.textContent = 'Attendance Trend Over Time';
+                    break;
+                case 'absences':
+                    chartTitle.textContent = 'Absence Trend Over Time';
+                    break;
+                case 'teachers':
+                    chartTitle.textContent = 'Total Teachers Over Time';
+                    break;
+            }
+
+            // Create grid lines and axes
+            let gridLines = '';
+            for (let i = 0; i <= 5; i++) {
+                const y = 50 + (i * 40);
+                gridLines += `<line class="chart-grid-line" x1="60" y1="${y}" x2="740" y2="${y}"></line>`;
+                const value = Math.round(maxValue - (i * maxValue / 5));
+                gridLines += `<text class="chart-label" x="50" y="${y + 5}">${value}${metric === 'attendance' ? '%' : ''}</text>`;
+            }
+
+            // X-axis
+            gridLines += `<line class="chart-axis" x1="60" y1="250" x2="740" y2="250"></line>`;
+            // Y-axis  
+            gridLines += `<line class="chart-axis" x1="60" y1="50" x2="60" y2="250"></line>`;
+
+            // Create path and points
+            const width = 680;
+            const height = 200;
+            let pathData = '';
+            let points = '';
+
+            chartData.forEach((item, index) => {
+                const x = 60 + (index * (width / (chartData.length - 1 || 1)));
+                const y = 250 - ((item.value / maxValue) * height);
+                
+                if (index === 0) {
+                    pathData += `M ${x} ${y}`;
+                } else {
+                    pathData += ` L ${x} ${y}`;
+                }
+
+                points += `<circle class="line-point" cx="${x}" cy="${y}" title="${item.label}: ${item.value}${metric === 'attendance' ? '%' : ''}"></circle>`;
+                
+                // X-axis labels
+                gridLines += `<text class="chart-label" x="${x}" y="270" text-anchor="middle">${item.label}</text>`;
+            });
+
+            svg.innerHTML = `
+                ${gridLines}
+                <path class="line-path" d="${pathData}"></path>
+                ${points}
+            `;
+        }
+
+        function getBarColor(percentage) {
+            if (percentage >= 90) return 'linear-gradient(135deg, #51cf66 0%, #40c057 100%)';
+            if (percentage >= 70) return 'linear-gradient(135deg, #ffd43b 0%, #fab005 100%)';
+            return 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)';
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98920d9aa4823c47',t:'MTc1OTU1MzM3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
